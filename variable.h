@@ -131,6 +131,19 @@ namespace upywrap
   {
     detail::SetVariable( ToPy( value ), names );
   }
+
+  template< class A >
+  void StoreModuleVariable( mp_obj_module_t *mod, const char* name, const A& value )
+  {
+    StoreModuleVariable(mod->globals, name, value);
+  }
+
+  template< class A >
+  void StoreModuleVariable( mp_obj_dict_t *globals, const char* name, const A& value )
+  {
+    mp_obj_dict_store( globals, new_qstr( name ), ToPy( value ) );
+  }
+
 }
 
 #endif //#ifndef MICROPYTHONWRAP_VARIABLE

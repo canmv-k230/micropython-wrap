@@ -427,13 +427,14 @@ namespace upywrap
       //Explicitly disable calling this with different flags though since that yields
       //a type which is actually different.
       static bool init = false;
-      if( !init )
+      // if( !*init )
       {
         OneTimeInit( name );
         type.flags = flags;
         init = true;
       }
-      else if( type.flags != flags )
+      // else 
+      if( type.flags != flags )
       {
         RaiseTypeException( "ClassWrapper's type flags can only be set once" );
       }

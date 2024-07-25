@@ -43,27 +43,27 @@ namespace upywrap
     {
     }
 
-    template< index_type name, class Ret, class... A >
+    template< int base, index_type name, class Ret, class... A >
     void Def( Ret( *f ) ( A... ), Arguments arguments, typename SelectRetvalConverter< Ret >::type conv = nullptr )
     {
-      typedef NativeCall< name, Ret, A... > call_type;
+      typedef NativeCall< base, name, Ret, A... > call_type;
 
       auto callerObject = call_type::CreateCaller( f );
       callerObject->convert_retval = conv;
       callerObject->arguments = std::move( arguments );
-      functionPointers[ (void*) name ] = callerObject;
+      functionPointers[ (void*) (reinterpret_cast<char *>(name) + base) ] = callerObject;
       mp_obj_dict_store( globals, new_qstr( name() ), call_type::CreateUPyFunction( *callerObject ) );
     }
 
-    template< index_type name, class Ret, class... A >
+    template< int base, index_type name, class Ret, class... A >
     void Def( Ret ( *f )( A... ), typename SelectRetvalConverter< Ret >::type conv = nullptr )
     {
-      Def< name, Ret, A... >( f, Arguments(), conv );
+      Def< base, name, Ret, A... >( f, Arguments(), conv );
     }
 
   private:
     //wrap native call in function with uPy compatible mp_obj_t( mp_obj_t.... ) signature
-    template< index_type index, class Ret, class... A >
+    template< int base, index_type index, class Ret, class... A >
     struct NativeCall
     {
       typedef FunctionCall< Ret, A... > call_type;
@@ -89,7 +89,7 @@ namespace upywrap
 
       static mp_obj_t Call( typename project2nd< A, mp_obj_t >::type... args )
       {
-        auto f = (call_type*) FunctionWrapper::functionPointers[ (void*) index ];
+        auto f = (call_type*) FunctionWrapper::functionPointers[ (void*) (reinterpret_cast<char *>(index) + base) ];
         return CallReturn< Ret, A... >::Call( f, args... );
       }
 
@@ -99,13 +99,13 @@ namespace upywrap
         {
           RaiseTypeException( "Wrong number of arguments" );
         }
-        auto f = (call_type*) FunctionWrapper::functionPointers[ (void*) index ];
+        auto f = (call_type*) FunctionWrapper::functionPointers[ (void*) (reinterpret_cast<char *>(index) + base) ];
         return CallVar( f, args, make_index_sequence< sizeof...( A ) >() );
       }
 
       static mp_obj_t CallKw( size_t n_args, const mp_obj_t* pos_args, mp_map_t* kw_args )
       {
-        auto f = (call_type*) FunctionWrapper::functionPointers[ (void*) index ];
+        auto f = (call_type*) FunctionWrapper::functionPointers[ (void*) (reinterpret_cast<char *>(index) + base) ];
         Arguments::parsed_obj_t parsedArgs{};
         f->arguments.Parse( n_args, pos_args, kw_args, parsedArgs );
         return CallVar( f, parsedArgs.data(), make_index_sequence< sizeof...( A ) >() );

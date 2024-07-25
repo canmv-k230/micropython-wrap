@@ -104,9 +104,7 @@ static inline void dict_lookup(mp_map_t *src, qstr attr, mp_obj_t *dest) {
       init_module_globals(name##_module.globals, &MP_STATE_VM(name##_module_globals_table), MP_QSTR_##name, initter); \
       return mp_const_none; \
   } \
-  static MP_DEFINE_CONST_FUN_OBJ_0(init_##name##_module_obj, init_##name##_module); \
   static mp_rom_map_elem_t name##_module_globals_table[] = { \
-      { MP_ROM_QSTR(MP_QSTR___init__), MP_ROM_PTR(&init_##name##_module_obj) } \
   }; \
   mp_obj_dict_t name##_module_globals = { \
       .base = {&mp_type_dict}, \
